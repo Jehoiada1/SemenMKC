@@ -2,46 +2,159 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 import { SpiritualCard, ProgressRing } from '@/components/SpiritualCard';
-import { CircleCheck as CheckCircle, Circle, Users, Download, Star } from 'lucide-react-native';
+import { CircleCheck as CheckCircle, Circle, Users, Download, Star, Lock, BookOpen } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useLocalizedFont } from '@/utils/fonts';
 import { LanguageToggle } from '@/components/LanguageToggle';
+import { supabase } from '@/utils/supabase';
+
+interface BibleStudy {
+  id: number;
+  title: string;
+  chapters: number;
+  isCompleted: boolean;
+  isUnlocked: boolean;
+  difficulty: string;
+  description: string;
+  progress: number;
+}
 
 export default function BibleStudyScreen() {
   const { t } = useLanguage();
   const { getFontFamily, getTitleFont } = useLocalizedFont();
-  const [completedStudies, setCompletedStudies] = useState<number[]>([1, 3, 5]);
+  const [bibleStudies, setBibleStudies] = useState<BibleStudy[]>([]);
+  const [userProgress, setUserProgress] = useState({
+    completedStudies: 0,
+    totalStudies: 0,
+    completedChapters: 0,
+    totalChapters: 0,
+  });
 
-  const bibleStudies = [
-    { id: 1, title: "Foundations of Faith", chapters: 12, completed: true, difficulty: "Beginner" },
-    { id: 2, title: "The Life of Jesus", chapters: 15, completed: false, difficulty: "Intermediate" },
-    { id: 3, title: "Psalms and Worship", chapters: 8, completed: true, difficulty: "Beginner" },
-    { id: 4, title: "Parables and Teachings", chapters: 10, completed: false, difficulty: "Intermediate" },
-    { id: 5, title: "Letters to the Churches", chapters: 14, completed: true, difficulty: "Advanced" },
-    { id: 6, title: "Prophecies and Revelation", chapters: 18, completed: false, difficulty: "Advanced" },
-  ];
+  useEffect(() => {
+    loadStudiesData();
+  }, []);
 
-  const progressStats = {
-    totalStudies: bibleStudies.length,
-    completed: completedStudies.length,
-    inProgress: 2,
-    totalChapters: bibleStudies.reduce((sum, study) => sum + study.chapters, 0),
-    completedChapters: bibleStudies
-      .filter(study => completedStudies.includes(study.id))
-      .reduce((sum, study) => sum + study.chapters, 0)
+  const loadStudiesData = async () => {
+    try {
+      // Mock studies data - in production this would come from Supabase
+      const studies: BibleStudy[] = [
+        {
+          id: 1,
+          title: "Foundations of Faith",
+          chapters: 12,
+          isCompleted: false,
+          isUnlocked: true, // First study is always unlocked
+          difficulty: "Beginner",
+          description: "Explore the fundamental principles of Christian faith",
+          progress: 0
+        },
+        {
+          id: 2,
+          title: "The Life of Jesus",
+          chapters: 15,
+          isCompleted: false,
+          isUnlocked: false,
+          difficulty: "Intermediate",
+          description: "Journey through the life and teachings of Christ",
+          progress: 0
+        },
+        {
+          id: 3,
+          title: "Psalms and Worship",
+          chapters: 8,
+          isCompleted: false,
+          isUnlocked: false,
+          difficulty: "Beginner",
+          description: "Discover the heart of worship through the Psalms",
+          progress: 0
+        },
+        {
+          id: 4,
+          title: "Parables and Teachings",
+          chapters: 10,
+          isCompleted: false,
+          isUnlocked: false,
+          difficulty: "Intermediate",
+          description: "Understand Jesus' parables and their meanings",
+          progress: 0
+        },
+        {
+          id: 5,
+          title: "Letters to the Churches",
+          chapters: 14,
+          isCompleted: false,
+          isUnlocked: false,
+          difficulty: "Advanced",
+          description: "Study Paul's letters and their applications",
+          progress: 0
+        },
+        {
+          id: 6,
+          title: "Prophecies and Revelation",
+          chapters: 18,
+          isCompleted: false,
+          isUnlocked: false,
+          difficulty: "Advanced",
+          description: "Explore biblical prophecy and end times",
+          progress: 0
+        },
+      ];
+
+      // Load user progress from Supabase
+      const { data: progressData } = await supabase
+        .from('user_study_progress')
+        .select('study_id, chapter_id, is_chapter_complete')
+        .order('study_id, chapter_id');
+
+      if (progressData) {
+        // Calculate progress for each study
+        studies.forEach(study => {
+          const studyProgress = progressData.filter(p => p.study_id === study.id);
+          const completedChapters = studyProgress.filter(p => p.is_chapter_complete).length;
+          
+          study.progress = (completedChapters / study.chapters) * 100;
+          study.isCompleted = completedChapters === study.chapters;
+          
+          // Unlock next study if current is completed
+          if (study.isCompleted && study.id < studies.length) {
+            const nextStudy = studies.find(s => s.id === study.id + 1);
+            if (nextStudy) {
+              nextStudy.isUnlocked = true;
+            }
+          }
+        });
+
+        // Calculate overall progress
+        const totalCompleted = studies.filter(s => s.isCompleted).length;
+        const totalChaptersCompleted = progressData.filter(p => p.is_chapter_complete).length;
+        const totalChapters = studies.reduce((sum, study) => sum + study.chapters, 0);
+
+        setUserProgress({
+          completedStudies: totalCompleted,
+          totalStudies: studies.length,
+          completedChapters: totalChaptersCompleted,
+          totalChapters: totalChapters,
+        });
+      }
+
+      setBibleStudies(studies);
+    } catch (error) {
+      console.log('Error loading studies data:', error);
+    }
   };
 
-  const overallProgress = (progressStats.completed / progressStats.totalStudies) * 100;
-
-  const toggleStudyCompletion = (studyId: number) => {
-    setCompletedStudies(prev => 
-      prev.includes(studyId) 
-        ? prev.filter(id => id !== studyId)
-        : [...prev, studyId]
-    );
+  const openStudy = (study: BibleStudy) => {
+    if (!study.isUnlocked) {
+      return;
+    }
+    router.push(`/study/${study.id}`);
   };
+
+  const overallProgress = userProgress.totalStudies > 0 
+    ? (userProgress.completedStudies / userProgress.totalStudies) * 100 
+    : 0;
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -88,7 +201,7 @@ export default function BibleStudyScreen() {
           <View style={styles.progressStats}>
             <View style={styles.statItem}>
               <Text style={[styles.statNumber, { fontFamily: getFontFamily('Bold') }]}>
-                {progressStats.completed}
+                {userProgress.completedStudies}
               </Text>
               <Text style={[styles.statLabel, { fontFamily: getFontFamily('Regular') }]}>
                 {t('completed')}
@@ -96,15 +209,15 @@ export default function BibleStudyScreen() {
             </View>
             <View style={styles.statItem}>
               <Text style={[styles.statNumber, { fontFamily: getFontFamily('Bold') }]}>
-                {progressStats.inProgress}
+                {bibleStudies.filter(s => s.isUnlocked && !s.isCompleted).length}
               </Text>
               <Text style={[styles.statLabel, { fontFamily: getFontFamily('Regular') }]}>
-                {t('inProgress')}
+                {t('available')}
               </Text>
             </View>
             <View style={styles.statItem}>
               <Text style={[styles.statNumber, { fontFamily: getFontFamily('Bold') }]}>
-                {progressStats.completedChapters}
+                {userProgress.completedChapters}
               </Text>
               <Text style={[styles.statLabel, { fontFamily: getFontFamily('Regular') }]}>
                 {t('chaptersDone')}
@@ -136,7 +249,7 @@ export default function BibleStudyScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Study List */}
+        {/* Available Studies */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { fontFamily: getFontFamily('SemiBold') }]}>
             {t('availableStudies')}
@@ -145,47 +258,83 @@ export default function BibleStudyScreen() {
           {bibleStudies.map((study) => (
             <SpiritualCard 
               key={study.id} 
-              style={styles.studyCard}
+              style={[
+                styles.studyCard,
+                !study.isUnlocked && styles.studyCardLocked
+              ]}
+              onPress={() => openStudy(study)}
             >
               <View style={styles.studyHeader}>
-                <TouchableOpacity 
-                  onPress={() => toggleStudyCompletion(study.id)}
-                  style={styles.checkboxContainer}
-                >
-                  {completedStudies.includes(study.id) ? (
+                <View style={styles.studyIcon}>
+                  {!study.isUnlocked ? (
+                    <Lock size={24} color={Colors.muted} />
+                  ) : study.isCompleted ? (
                     <CheckCircle size={24} color={Colors.success} />
                   ) : (
-                    <Circle size={24} color={Colors.muted} />
+                    <BookOpen size={24} color={Colors.softGold} />
                   )}
-                </TouchableOpacity>
+                </View>
                 
                 <View style={styles.studyInfo}>
                   <Text style={[
                     styles.studyTitle,
                     { fontFamily: getFontFamily('SemiBold') },
-                    completedStudies.includes(study.id) && styles.completedText
+                    !study.isUnlocked && styles.studyTitleLocked
                   ]}>
                     {study.title}
                   </Text>
+                  <Text style={[
+                    styles.studyDescription,
+                    { fontFamily: getFontFamily('Regular') },
+                    !study.isUnlocked && styles.studyDescriptionLocked
+                  ]}>
+                    {study.description}
+                  </Text>
                   <View style={styles.studyMeta}>
-                    <Text style={[styles.studyChapters, { fontFamily: getFontFamily('Regular') }]}>
+                    <Text style={[
+                      styles.studyChapters,
+                      { fontFamily: getFontFamily('Regular') },
+                      !study.isUnlocked && styles.studyChaptersLocked
+                    ]}>
                       {study.chapters} {t('chapters')}
                     </Text>
                     <View style={[
                       styles.difficultyBadge,
-                      { backgroundColor: getDifficultyColor(study.difficulty) }
+                      { backgroundColor: getDifficultyColor(study.difficulty) },
+                      !study.isUnlocked && styles.difficultyBadgeLocked
                     ]}>
                       <Text style={[styles.difficultyText, { fontFamily: getFontFamily('Medium') }]}>
                         {getDifficultyText(study.difficulty)}
                       </Text>
                     </View>
                   </View>
+                  
+                  {study.isUnlocked && study.progress > 0 && (
+                    <View style={styles.progressContainer}>
+                      <View style={styles.progressBar}>
+                        <View 
+                          style={[styles.progressFill, { width: `${study.progress}%` }]} 
+                        />
+                      </View>
+                      <Text style={[styles.progressText, { fontFamily: getFontFamily('Regular') }]}>
+                        {Math.round(study.progress)}% {t('complete')}
+                      </Text>
+                    </View>
+                  )}
                 </View>
                 
-                {completedStudies.includes(study.id) && (
+                {study.isCompleted && (
                   <Star size={20} color={Colors.softGold} fill={Colors.softGold} />
                 )}
               </View>
+              
+              {!study.isUnlocked && (
+                <View style={styles.lockedMessage}>
+                  <Text style={[styles.lockedText, { fontFamily: getFontFamily('Regular') }]}>
+                    {t('completeStudyToUnlock', { study: study.id - 1 })}
+                  </Text>
+                </View>
+              )}
             </SpiritualCard>
           ))}
         </View>
@@ -198,9 +347,17 @@ export default function BibleStudyScreen() {
           <Text style={[styles.recommendationText, { fontFamily: getFontFamily('Regular') }]}>
             {t('recommendationText')}
           </Text>
-          <TouchableOpacity style={styles.recommendationButton}>
+          <TouchableOpacity 
+            style={styles.recommendationButton}
+            onPress={() => {
+              const nextStudy = bibleStudies.find(s => s.isUnlocked && !s.isCompleted);
+              if (nextStudy) {
+                openStudy(nextStudy);
+              }
+            }}
+          >
             <Text style={[styles.recommendationButtonText, { fontFamily: getFontFamily('SemiBold') }]}>
-              {t('startStudy')}
+              {t('continueStudy')}
             </Text>
           </TouchableOpacity>
         </SpiritualCard>
@@ -299,11 +456,21 @@ const styles = StyleSheet.create({
   studyCard: {
     marginBottom: 12,
   },
+  studyCardLocked: {
+    backgroundColor: Colors.softGray,
+    borderColor: Colors.mediumGray,
+  },
   studyHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
-  checkboxContainer: {
+  studyIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: Colors.lightGold,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 16,
   },
   studyInfo: {
@@ -312,30 +479,76 @@ const styles = StyleSheet.create({
   studyTitle: {
     fontSize: 16,
     color: Colors.primary,
-    marginBottom: 6,
+    marginBottom: 4,
   },
-  completedText: {
-    textDecorationLine: 'line-through',
+  studyTitleLocked: {
+    color: Colors.muted,
+  },
+  studyDescription: {
+    fontSize: 14,
+    color: Colors.secondary,
+    marginBottom: 8,
+    lineHeight: 18,
+  },
+  studyDescriptionLocked: {
     color: Colors.muted,
   },
   studyMeta: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: 8,
   },
   studyChapters: {
-    fontSize: 14,
+    fontSize: 12,
     color: Colors.secondary,
+  },
+  studyChaptersLocked: {
+    color: Colors.muted,
   },
   difficultyBadge: {
     borderRadius: 6,
     paddingVertical: 2,
     paddingHorizontal: 8,
   },
+  difficultyBadgeLocked: {
+    backgroundColor: Colors.mediumGray,
+  },
   difficultyText: {
     fontSize: 10,
     color: Colors.warmWhite,
     textTransform: 'uppercase',
+  },
+  progressContainer: {
+    marginTop: 8,
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: Colors.lightGold,
+    borderRadius: 2,
+    overflow: 'hidden',
+    marginBottom: 4,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: Colors.softGold,
+    borderRadius: 2,
+  },
+  progressText: {
+    fontSize: 10,
+    color: Colors.secondary,
+  },
+  lockedMessage: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: Colors.lightGold,
+  },
+  lockedText: {
+    fontSize: 12,
+    color: Colors.muted,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
   recommendationCard: {
     backgroundColor: Colors.lightGold,

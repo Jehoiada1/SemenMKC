@@ -6,7 +6,7 @@ export type Language = 'en' | 'am';
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, any>) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -40,6 +40,7 @@ const translations = {
     yourProgress: 'Your Progress',
     completed: 'Completed',
     inProgress: 'In Progress',
+    available: 'Available',
     chaptersDone: 'Chapters Done',
     downloadGuides: 'Download Guides',
     availableStudies: 'Available Studies',
@@ -48,8 +49,28 @@ const translations = {
     intermediate: 'Intermediate',
     advanced: 'Advanced',
     recommendedForYou: 'Recommended for You',
-    recommendationText: 'Based on your progress, we suggest starting with "The Life of Jesus" to deepen your understanding of Christ\'s ministry.',
+    recommendationText: 'Based on your progress, we suggest continuing with your current study to deepen your understanding.',
     startStudy: 'Start Study',
+    continueStudy: 'Continue Study',
+    
+    // Study Progress
+    studyProgress: 'Study Progress',
+    chaptersCompleted: 'Chapters Completed',
+    page: 'Page',
+    of: 'of',
+    complete: 'complete',
+    previous: 'Previous',
+    next: 'Next',
+    chapterComplete: 'Chapter Complete!',
+    chapterCompleteMessage: 'Congratulations! You have completed this chapter. The next chapter is now unlocked.',
+    chapterSummary: 'Chapter Summary',
+    chapterSummaryText: 'You have reached the end of this chapter. Take a moment to reflect on what you have learned.',
+    markChapterComplete: 'Mark Chapter Complete',
+    studyComplete: 'Study Complete!',
+    studyCompleteMessage: 'Congratulations! You have completed this entire study. The next study is now available.',
+    exploreMoreStudies: 'Explore More Studies',
+    completeChapterToUnlock: 'Complete Chapter {{chapter}} to unlock this chapter',
+    completeStudyToUnlock: 'Complete Study {{study}} to unlock this study',
     
     // Sermons
     sermonsTitle: 'Sermons',
@@ -121,52 +142,6 @@ const translations = {
     doctrineOfAtonement: 'Doctrine of Atonement',
     doctrineOfAtonementDesc: 'Christ\'s sacrificial death on the cross as the payment for sin and reconciliation with God.',
     
-    // Family Tracker
-    familyStudyTrackerTitle: 'Family Study Tracker',
-    familyTrackerSubtitle: 'Track your family\'s spiritual journey together',
-    members: 'members',
-    activeStudies: 'Active Studies',
-    weeklyGoal: 'Weekly Goal',
-    familyMembers: 'Family Members',
-    groupStudies: 'Group Studies',
-    participants: 'participants',
-    sessions: 'sessions',
-    next: 'Next',
-    weeklyFamilyChallenge: 'Weekly Family Challenge',
-    challengeText: 'Complete 3 family devotion sessions this week. You\'re currently at',
-    outOf: 'out of',
-    startNewFamilyStudy: 'Start New Family Study',
-    
-    // Admin
-    adminPanel: 'Admin Panel',
-    adminSubtitle: 'Manage church content and users',
-    overview: 'Overview',
-    uploadContent: 'Upload Content',
-    adminOverview: 'Admin Overview',
-    totalUsers: 'Total Users',
-    thisWeek: 'This Week',
-    recentUploads: 'Recent Uploads',
-    settings: 'Settings',
-    analytics: 'Analytics',
-    manageUsers: 'Manage Users',
-    contentUpload: 'Content Upload',
-    uploadSermon: 'Upload Sermon',
-    uploadSermonDesc: 'Add new audio or video sermons',
-    uploadDoctrine: 'Upload Doctrine',
-    uploadDoctrineDesc: 'Add PDF doctrine documents',
-    createStudy: 'Create Study',
-    chooseFiles: 'Choose Files',
-    quickSermonUpload: 'Quick Sermon Upload',
-    title: 'Title',
-    speaker: 'Speaker',
-    category: 'Category',
-    enterSermonTitle: 'Enter sermon title',
-    enterSpeakerName: 'Enter speaker name',
-    uploadPublish: 'Upload & Publish',
-    pendingReviews: 'Pending Reviews',
-    pendingReviewsText: 'items waiting for review and approval.',
-    reviewNow: 'Review Now',
-    
     // Pastor Names
     pastorFitsum: 'መምህር ፍፁም ሞላ',
     pastorMekonnen: 'መጋቢ መኮንን ምላሹ',
@@ -225,6 +200,7 @@ const translations = {
     yourProgress: 'የእርስዎ እድገት',
     completed: 'የተጠናቀቀ',
     inProgress: 'በሂደት ላይ',
+    available: 'ያለ',
     chaptersDone: 'የተጠናቀቁ ምዕራፎች',
     downloadGuides: 'መመሪያዎችን ያውርዱ',
     availableStudies: 'ያሉ ጥናቶች',
@@ -233,8 +209,28 @@ const translations = {
     intermediate: 'መካከለኛ',
     advanced: 'ከፍተኛ',
     recommendedForYou: 'ለእርስዎ የሚመከር',
-    recommendationText: 'በእርስዎ እድገት መሰረት፣ "የኢየሱስ ሕይወት" በመጀመር የክርስቶስን አገልግሎት ለመረዳት እንመክራለን።',
+    recommendationText: 'በእርስዎ እድገት መሰረት፣ የአሁኑን ጥናትዎን በመቀጠል ለመረዳት እንመክራለን።',
     startStudy: 'ጥናት ይጀምሩ',
+    continueStudy: 'ጥናት ይቀጥሉ',
+    
+    // Study Progress
+    studyProgress: 'የጥናት እድገት',
+    chaptersCompleted: 'የተጠናቀቁ ምዕራፎች',
+    page: 'ገጽ',
+    of: 'ከ',
+    complete: 'ተጠናቅቋል',
+    previous: 'ቀዳሚ',
+    next: 'ቀጣይ',
+    chapterComplete: 'ምዕራፍ ተጠናቅቋል!',
+    chapterCompleteMessage: 'እንኳን ደስ አለዎት! ይህን ምዕራፍ አጠናቅቀዋል። ቀጣዩ ምዕራፍ አሁን ተከፍቷል።',
+    chapterSummary: 'የምዕራፍ ማጠቃለያ',
+    chapterSummaryText: 'የዚህ ምዕራፍ መጨረሻ ላይ ደርሰዋል። የተማሩትን ለማሰብ ጊዜ ይውሰዱ።',
+    markChapterComplete: 'ምዕራፍ እንደተጠናቀቀ ምልክት ያድርጉ',
+    studyComplete: 'ጥናት ተጠናቅቋል!',
+    studyCompleteMessage: 'እንኳን ደስ አለዎት! ይህን ሙሉ ጥናት አጠናቅቀዋል። ቀጣዩ ጥናት አሁን ተዘጋጅቷል።',
+    exploreMoreStudies: 'ተጨማሪ ጥናቶችን ያስሱ',
+    completeChapterToUnlock: 'ይህን ምዕራፍ ለመክፈት ምዕራፍ {{chapter}} ያጠናቅቁ',
+    completeStudyToUnlock: 'ይህን ጥናት ለመክፈት ጥናት {{study}} ያጠናቅቁ',
     
     // Sermons
     sermonsTitle: 'ስብከቶች',
@@ -306,52 +302,6 @@ const translations = {
     doctrineOfAtonement: 'የማስታረቅ ትምህርት',
     doctrineOfAtonementDesc: 'የክርስቶስ በመስቀል ላይ የተሰዋ ሞት እንደ ኃጢአት ክፍያና ከእግዚአብሔር ጋር እንደ ማስታረቅ።',
     
-    // Family Tracker
-    familyStudyTrackerTitle: 'የቤተሰብ ጥናት መከታተያ',
-    familyTrackerSubtitle: 'የቤተሰብዎን መንፈሳዊ ጉዞ አብረው ይከታተሉ',
-    members: 'አባላት',
-    activeStudies: 'ንቁ ጥናቶች',
-    weeklyGoal: 'ሳምንታዊ ግብ',
-    familyMembers: 'የቤተሰብ አባላት',
-    groupStudies: 'የቡድን ጥናቶች',
-    participants: 'ተሳታፊዎች',
-    sessions: 'ክፍለ ጊዜዎች',
-    next: 'ቀጣይ',
-    weeklyFamilyChallenge: 'ሳምንታዊ የቤተሰብ ፈተና',
-    challengeText: 'በዚህ ሳምንት 3 የቤተሰብ ምሳሌ ክፍለ ጊዜዎችን ይጨርሱ። አሁን እርስዎ በ',
-    outOf: 'ከ',
-    startNewFamilyStudy: 'አዲስ የቤተሰብ ጥናት ይጀምሩ',
-    
-    // Admin
-    adminPanel: 'የአስተዳዳሪ ፓነል',
-    adminSubtitle: 'የቤተክርስቲያን ይዘት እና ተጠቃሚዎችን ያስተዳድሩ',
-    overview: 'አጠቃላይ እይታ',
-    uploadContent: 'ይዘት ይስቀሉ',
-    adminOverview: 'የአስተዳዳሪ አጠቃላይ እይታ',
-    totalUsers: 'ጠቅላላ ተጠቃሚዎች',
-    thisWeek: 'በዚህ ሳምንት',
-    recentUploads: 'የቅርብ ጊዜ ስቀላዎች',
-    settings: 'ቅንብሮች',
-    analytics: 'ትንታኔዎች',
-    manageUsers: 'ተጠቃሚዎችን ያስተዳድሩ',
-    contentUpload: 'ይዘት ስቀላ',
-    uploadSermon: 'ስብከት ይስቀሉ',
-    uploadSermonDesc: 'አዲስ የድምጽ ወይም የቪዲዮ ስብከቶች ይጨምሩ',
-    uploadDoctrine: 'ትምህርት ይስቀሉ',
-    uploadDoctrineDesc: 'የPDF ትምህርት ሰነዶች ይጨምሩ',
-    createStudy: 'ጥናት ይፍጠሩ',
-    chooseFiles: 'ፋይሎች ይምረጡ',
-    quickSermonUpload: 'ፈጣን ስብከት ስቀላ',
-    title: 'ርዕስ',
-    speaker: 'ተናጋሪ',
-    category: 'ምድብ',
-    enterSermonTitle: 'የስብከት ርዕስ ያስገቡ',
-    enterSpeakerName: 'የተናጋሪ ስም ያስገቡ',
-    uploadPublish: 'ይስቀሉ እና ያትሙ',
-    pendingReviews: 'በመጠባበቅ ላይ ያሉ ግምገማዎች',
-    pendingReviewsText: 'ንጥሎች ለግምገማ እና ለማጽደቅ በመጠባበቅ ላይ።',
-    reviewNow: 'አሁን ይገምግሙ',
-    
     // Pastor Names
     pastorFitsum: 'መምህር ፍፁም ሞላ',
     pastorMekonnen: 'መጋቢ መኮንን ምላሹ',
@@ -415,8 +365,17 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     }
   };
 
-  const t = (key: string): string => {
-    return translations[language][key as keyof typeof translations['en']] || key;
+  const t = (key: string, params?: Record<string, any>): string => {
+    let translation = translations[language][key as keyof typeof translations['en']] || key;
+    
+    // Handle parameter substitution
+    if (params) {
+      Object.keys(params).forEach(param => {
+        translation = translation.replace(new RegExp(`{{${param}}}`, 'g'), params[param]);
+      });
+    }
+    
+    return translation;
   };
 
   return (
@@ -429,7 +388,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
 export function useLanguage() {
   const context = useContext(LanguageContext);
   if (context === undefined) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
+    throw new error('useLanguage must be used within a LanguageProvider');
   }
   return context;
 }
