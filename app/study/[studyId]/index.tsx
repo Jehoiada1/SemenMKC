@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 import { SpiritualCard } from '@/components/SpiritualCard';
-import { ArrowLeft, BookOpen, Lock, CheckCircle, Play } from 'lucide-react-native';
+import { ArrowLeft, BookOpen, Lock, CircleCheck as CheckCircle, Play } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
