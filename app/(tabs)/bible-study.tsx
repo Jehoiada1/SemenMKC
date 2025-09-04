@@ -9,6 +9,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useLocalizedFont } from '@/utils/fonts';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { supabase } from '@/utils/supabase';
+import { ViewStyle } from 'react-native';
 
 interface BibleStudy {
   id: number;
@@ -255,15 +256,18 @@ export default function BibleStudyScreen() {
             {t('availableStudies')}
           </Text>
           
-          {bibleStudies.map((study) => (
-            <SpiritualCard 
-              key={study.id} 
-              style={[
-                styles.studyCard,
-                !study.isUnlocked && styles.studyCardLocked
-              ]}
-              onPress={() => openStudy(study)}
-            >
+          {bibleStudies.map((study) => {
+            const cardStyles: ViewStyle[] = [styles.studyCard];
+            if (!study.isUnlocked) {
+              cardStyles.push(styles.studyCardLocked);
+            }
+            
+            return (
+              <SpiritualCard 
+                key={study.id} 
+                style={cardStyles}
+                onPress={() => openStudy(study)}
+              >
               <View style={styles.studyHeader}>
                 <View style={styles.studyIcon}>
                   {!study.isUnlocked ? (
@@ -335,8 +339,9 @@ export default function BibleStudyScreen() {
                   </Text>
                 </View>
               )}
-            </SpiritualCard>
-          ))}
+              </SpiritualCard>
+            );
+          })}
         </View>
 
         {/* Recommendations */}

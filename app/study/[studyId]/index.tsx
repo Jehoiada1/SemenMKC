@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useLocalizedFont } from '@/utils/fonts';
 import { supabase } from '@/utils/supabase';
+import { ViewStyle } from 'react-native';
 
 interface Chapter {
   id: number;
@@ -176,15 +177,18 @@ export default function StudyDetailScreen() {
             {t('chapters')}
           </Text>
           
-          {study.chapters.map((chapter) => (
-            <SpiritualCard 
-              key={chapter.id} 
-              style={[
-                styles.chapterCard,
-                !chapter.isUnlocked && styles.chapterCardLocked
-              ]}
-              onPress={() => openChapter(chapter)}
-            >
+          {study.chapters.map((chapter) => {
+            const cardStyles: ViewStyle[] = [styles.chapterCard];
+            if (!chapter.isUnlocked) {
+              cardStyles.push(styles.chapterCardLocked);
+            }
+            
+            return (
+              <SpiritualCard 
+                key={chapter.id} 
+                style={cardStyles}
+                onPress={() => openChapter(chapter)}
+              >
               <View style={styles.chapterHeader}>
                 <View style={styles.chapterIcon}>
                   {!chapter.isUnlocked ? (
@@ -243,8 +247,9 @@ export default function StudyDetailScreen() {
                   </Text>
                 </View>
               )}
-            </SpiritualCard>
-          ))}
+              </SpiritualCard>
+            );
+          })}
         </View>
 
         {/* Study Completion */}

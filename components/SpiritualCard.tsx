@@ -5,7 +5,7 @@ import { ReactNode } from 'react';
 interface SpiritualCardProps {
   children: ReactNode;
   onPress?: () => void;
-  style?: ViewStyle;
+  style?: ViewStyle | ViewStyle[];
 }
 
 export function SpiritualCard({ children, onPress, style }: SpiritualCardProps) {

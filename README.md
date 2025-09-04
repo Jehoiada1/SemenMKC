@@ -1,8 +1,49 @@
-SemenMKC
-# 📱 Bible Study Mobile App - Technical Documentation
+# SemenMKC - Bible Study Mobile App
 
 **Version**: 1.0.0  
-**Last Updated**: 2025-06-27  
+**Last Updated**: 2025-01-27  
+**Status**: 🟡 Development - Backend Integration Needed
+
+A React Native mobile application for Bible study, sermon tracking, and spiritual growth with comprehensive English and Amharic language support.
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+ and npm
+- Expo CLI (`npm install -g @expo/cli`)
+- iOS Simulator (Mac) or Android Emulator
+- Supabase account (for backend)
+
+### Setup
+1. **Clone and Install**
+   ```bash
+   git clone https://github.com/Jehoiada1/SemenMKC.git
+   cd SemenMKC
+   npm install
+   ```
+
+2. **Environment Configuration**
+   ```bash
+   cp .env.template .env
+   # Edit .env with your Supabase credentials
+   ```
+
+3. **Start Development**
+   ```bash
+   npm run dev
+   ```
+
+### 📋 Current Status
+- ✅ **UI/UX**: Complete with beautiful design
+- ✅ **Languages**: Full English & Amharic support  
+- ✅ **Navigation**: All screens implemented
+- ❌ **Backend**: Needs Supabase connection
+- ❌ **Authentication**: Not implemented
+- ❌ **Content**: Static data only
+
+**📖 [Full Analysis](./CODEBASE_ANALYSIS.md)** | **🔧 [Development Guide](./DEVELOPMENT.md)**
 
 ---
 
