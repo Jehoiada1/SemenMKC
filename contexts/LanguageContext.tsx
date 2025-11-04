@@ -33,7 +33,8 @@ const translations = {
     submitPrayerRequest: 'Submit Prayer Request',
     doctrines: 'Doctrines',
     familyStudy: 'Family Study',
-    
+    familyStudySubtitle: 'Strengthen your family\'s faith together',
+
     // Bible Study
     bibleStudyTitle: 'Bible Study',
     bibleStudySubtitle: 'Grow deeper in your faith journey',
@@ -193,7 +194,8 @@ const translations = {
     submitPrayerRequest: 'የጸሎት ጥያቄ ያስገቡ',
     doctrines: 'ትምህርቶች',
     familyStudy: 'የቤተሰብ ጥናት',
-    
+    familyStudySubtitle: 'የቤተሰብዎን እምነት አብረው ያጠናክሩ',
+
     // Bible Study
     bibleStudyTitle: 'የመጽሐፍ ቅዱስ ጥናት',
     bibleStudySubtitle: 'በእምነት ጉዞዎ ውስጥ ይበልጥ ያድጉ',

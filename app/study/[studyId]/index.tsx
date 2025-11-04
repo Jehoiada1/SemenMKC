@@ -30,7 +30,7 @@ export default function StudyDetailScreen() {
   const { studyId } = useLocalSearchParams();
   const { t } = useLanguage();
   const { getFontFamily, getTitleFont } = useLocalizedFont();
-  
+
   const [study, setStudy] = useState<Study | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -40,23 +40,23 @@ export default function StudyDetailScreen() {
 
   const loadStudyData = async () => {
     try {
-      // Mock data - in production this would come from Supabase
+      const studyIdNum = parseInt(studyId as string);
+
       const studyData: Study = {
-        id: parseInt(studyId as string),
-        title: 'Foundations of Faith',
-        description: 'A comprehensive study exploring the fundamental principles of Christian faith, designed to strengthen your spiritual foundation.',
+        id: studyIdNum,
+        title: getStudyTitle(studyIdNum),
+        description: getStudyDescription(studyIdNum),
         totalChapters: 12,
         chapters: Array.from({ length: 12 }, (_, i) => ({
           id: i + 1,
-          title: `Chapter ${i + 1}: ${getChapterTitle(i + 1)}`,
+          title: `Chapter ${i + 1}: ${getChapterTitle(studyIdNum, i + 1)}`,
           pages: 3,
           isCompleted: false,
-          isUnlocked: i === 0, // Only first chapter unlocked initially
+          isUnlocked: i === 0,
           progress: 0
         }))
       };
 
-      // Load progress from Supabase
       const { data: progressData } = await supabase
         .from('user_study_progress')
         .select('*')
@@ -68,8 +68,7 @@ export default function StudyDetailScreen() {
           if (studyData.chapters[chapterIndex]) {
             studyData.chapters[chapterIndex].isCompleted = progress.is_chapter_complete;
             studyData.chapters[chapterIndex].progress = (progress.pages_completed / studyData.chapters[chapterIndex].pages) * 100;
-            
-            // Unlock next chapter if current is complete
+
             if (progress.is_chapter_complete && chapterIndex + 1 < studyData.chapters.length) {
               studyData.chapters[chapterIndex + 1].isUnlocked = true;
             }
@@ -85,22 +84,76 @@ export default function StudyDetailScreen() {
     }
   };
 
-  const getChapterTitle = (chapterNumber: number): string => {
-    const titles = [
-      'Understanding God\'s Love',
-      'The Nature of Faith',
-      'Prayer and Communication',
-      'Scripture and Truth',
-      'Grace and Forgiveness',
-      'Community and Fellowship',
-      'Service and Ministry',
-      'Spiritual Growth',
-      'Overcoming Challenges',
-      'Living with Purpose',
-      'Sharing Your Faith',
-      'Walking in Victory'
-    ];
-    return titles[chapterNumber - 1] || `Study Topic ${chapterNumber}`;
+  const getStudyTitle = (studyId: number): string => {
+    const titles = {
+      1: 'Foundations of Faith',
+      2: 'The Life of Jesus',
+      3: 'Psalms and Worship',
+      4: 'Parables and Teachings',
+      5: 'Letters to the Churches',
+      6: 'Prophecies and Revelation',
+      7: 'Family Devotions',
+      8: 'Parenting with Grace',
+      9: 'Marriage and Unity',
+      10: 'Family Worship',
+      11: 'Teaching Faith to Children',
+      12: 'Family Prayer Life',
+    };
+    return titles[studyId as keyof typeof titles] || 'Study';
+  };
+
+  const getStudyDescription = (studyId: number): string => {
+    const descriptions = {
+      1: 'A comprehensive study exploring the fundamental principles of Christian faith.',
+      2: 'Journey through the life and teachings of Christ.',
+      3: 'Discover the heart of worship through the Psalms.',
+      4: 'Understand Jesus\' parables and their meanings.',
+      5: 'Study Paul\'s letters and their applications.',
+      6: 'Explore biblical prophecy and end times.',
+      7: 'Build strong spiritual foundations together as a family.',
+      8: 'Learn biblical principles for raising children in faith.',
+      9: 'Strengthen your marriage through God\'s Word.',
+      10: 'Create meaningful worship experiences at home.',
+      11: 'Pass on your faith to the next generation.',
+      12: 'Develop a powerful family prayer practice.',
+    };
+    return descriptions[studyId as keyof typeof descriptions] || 'Explore and grow in your faith.';
+  };
+
+  const getChapterTitle = (studyId: number, chapterNumber: number): string => {
+    if (studyId >= 1 && studyId <= 6) {
+      const titles = [
+        'Understanding God\'s Love',
+        'The Nature of Faith',
+        'Prayer and Communication',
+        'Scripture and Truth',
+        'Grace and Forgiveness',
+        'Community and Fellowship',
+        'Service and Ministry',
+        'Spiritual Growth',
+        'Overcoming Challenges',
+        'Living with Purpose',
+        'Sharing Your Faith',
+        'Walking in Victory'
+      ];
+      return titles[chapterNumber - 1] || `Study Topic ${chapterNumber}`;
+    } else {
+      const titles = [
+        'Starting Family Devotions',
+        'Creating Sacred Moments',
+        'Teaching Through Stories',
+        'Praying Together',
+        'Building Faith Habits',
+        'Celebrating Traditions',
+        'Serving as a Family',
+        'Handling Challenges',
+        'Growing in Love',
+        'Strengthening Bonds',
+        'Sharing Values',
+        'Living Faith Daily'
+      ];
+      return titles[chapterNumber - 1] || `Family Topic ${chapterNumber}`;
+    }
   };
 
   const openChapter = (chapter: Chapter) => {
@@ -128,9 +181,8 @@ export default function StudyDetailScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
           >
@@ -146,7 +198,6 @@ export default function StudyDetailScreen() {
           </View>
         </View>
 
-        {/* Progress Overview */}
         <SpiritualCard style={styles.progressCard}>
           <View style={styles.progressHeader}>
             <Text style={[styles.progressTitle, { fontFamily: getFontFamily('SemiBold') }]}>
@@ -156,13 +207,13 @@ export default function StudyDetailScreen() {
               {Math.round(overallProgress)}%
             </Text>
           </View>
-          
+
           <View style={styles.progressBar}>
-            <View 
-              style={[styles.progressFill, { width: `${overallProgress}%` }]} 
+            <View
+              style={[styles.progressFill, { width: `${overallProgress}%` }]}
             />
           </View>
-          
+
           <View style={styles.progressStats}>
             <Text style={[styles.progressText, { fontFamily: getFontFamily('Regular') }]}>
               {t('chaptersCompleted')}: {completedChapters} / {study.totalChapters}
@@ -170,15 +221,14 @@ export default function StudyDetailScreen() {
           </View>
         </SpiritualCard>
 
-        {/* Chapters List */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { fontFamily: getFontFamily('SemiBold') }]}>
             {t('chapters')}
           </Text>
-          
+
           {study.chapters.map((chapter) => (
-            <SpiritualCard 
-              key={chapter.id} 
+            <SpiritualCard
+              key={chapter.id}
               style={[
                 styles.chapterCard,
                 !chapter.isUnlocked && styles.chapterCardLocked
@@ -195,7 +245,7 @@ export default function StudyDetailScreen() {
                     <BookOpen size={20} color={Colors.softGold} />
                   )}
                 </View>
-                
+
                 <View style={styles.chapterInfo}>
                   <Text style={[
                     styles.chapterTitle,
@@ -211,15 +261,15 @@ export default function StudyDetailScreen() {
                   ]}>
                     {chapter.pages} {t('pages')}
                   </Text>
-                  
+
                   {chapter.isUnlocked && chapter.progress > 0 && (
                     <View style={styles.chapterProgressContainer}>
                       <View style={styles.chapterProgressBar}>
-                        <View 
+                        <View
                           style={[
-                            styles.chapterProgressFill, 
+                            styles.chapterProgressFill,
                             { width: `${chapter.progress}%` }
-                          ]} 
+                          ]}
                         />
                       </View>
                       <Text style={[styles.chapterProgressText, { fontFamily: getFontFamily('Regular') }]}>
@@ -228,14 +278,14 @@ export default function StudyDetailScreen() {
                     </View>
                   )}
                 </View>
-                
+
                 {chapter.isUnlocked && (
                   <View style={styles.chapterAction}>
                     <Play size={16} color={Colors.softGold} />
                   </View>
                 )}
               </View>
-              
+
               {!chapter.isUnlocked && (
                 <View style={styles.lockedMessage}>
                   <Text style={[styles.lockedText, { fontFamily: getFontFamily('Regular') }]}>
@@ -247,7 +297,6 @@ export default function StudyDetailScreen() {
           ))}
         </View>
 
-        {/* Study Completion */}
         {completedChapters === study.totalChapters && (
           <SpiritualCard style={styles.completionCard}>
             <View style={styles.completionHeader}>
@@ -259,9 +308,16 @@ export default function StudyDetailScreen() {
             <Text style={[styles.completionText, { fontFamily: getFontFamily('Regular') }]}>
               {t('studyCompleteMessage')}
             </Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.nextStudyButton}
-              onPress={() => router.push('/bible-study')}
+              onPress={() => {
+                const studyIdNum = parseInt(studyId as string);
+                if (studyIdNum >= 1 && studyIdNum <= 6) {
+                  router.push('/bible-study');
+                } else {
+                  router.push('/family-tracker');
+                }
+              }}
             >
               <Text style={[styles.nextStudyButtonText, { fontFamily: getFontFamily('SemiBold') }]}>
                 {t('exploreMoreStudies')}
